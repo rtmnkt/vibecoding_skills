@@ -118,6 +118,7 @@ $SCRIPT kill @1 && $SCRIPT kill @2
 $SCRIPT new "bash"              # create shell → @N
 $SCRIPT list                    # list shells
 $SCRIPT type @N "<text>"        # type text (no Enter)
+$SCRIPT type @N "<text>" -s     # type text and submit (auto-Enter)
 $SCRIPT submit @N               # send Enter
 $SCRIPT capture @N              # get visible output
 $SCRIPT capture @N -h 100       # get last 100 lines from scroll buffer (bottom-relative)
@@ -127,8 +128,14 @@ $SCRIPT current                 # get current shell ID
 
 **Chained operations:**
 ```bash
+# Old way (still supported)
 $SCRIPT type @N "command" && $SCRIPT submit @N
+
+# New way (simplified)
+$SCRIPT type @N "command" -s
 ```
+
+**Important:** Use `-s` flag only for commands that require Enter. For single-character menu inputs (e.g., `1`, `2`, `q`, `y`), omit `-s` as these accept input immediately.
 
 ---
 

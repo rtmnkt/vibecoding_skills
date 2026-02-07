@@ -49,8 +49,28 @@ impl_dispatch() {
         type)
             local target="$1"
             shift
-            local text="$*"
+            local submit_flag=""
+            local text=""
+            
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    -s)
+                        submit_flag=1
+                        shift
+                        ;;
+                    *)
+                        text="$text$1 "
+                        shift
+                        ;;
+                esac
+            done
+            
+            text="${text% }"
             tmux send-keys -t "$target" -l "$text"
+            
+            if [ -n "$submit_flag" ]; then
+                tmux send-keys -t "$target" Enter
+            fi
             ;;
         
         key)
