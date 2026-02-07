@@ -119,8 +119,8 @@ $SCRIPT new "bash"              # create shell → @N
 $SCRIPT list                    # list shells
 $SCRIPT type @N "<text>"        # type text (no Enter)
 $SCRIPT submit @N               # send Enter
-$SCRIPT capture @N              # get visible output
-$SCRIPT capture @N -h 100       # include scroll buffer
+$SCRIPT capture @N              # get visible output (bottom-relative)
+$SCRIPT capture @N -h 100       # get last 100 lines from scroll buffer (bottom-relative)
 $SCRIPT kill @N                 # close shell
 $SCRIPT current                 # get current shell ID
 ```
@@ -137,7 +137,7 @@ $SCRIPT type @N "command" && $SCRIPT submit @N
 
 - **Environment variables**: Use `new "bash"` then set env vars, or `new "bash -c 'VAR=val command'"`
 - **Completion detection**: Use result files (recommended) or poll with `capture`
-- **capture**: Returns current screen snapshot, no waiting
+- **capture**: Returns output from bottom of scroll buffer. `-h N` gets last N lines (bottom-relative)
 - **submit**: Sends Enter only, no capture
 
 ---
