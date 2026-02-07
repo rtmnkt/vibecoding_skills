@@ -22,31 +22,44 @@ add_line_numbers() {
     nl -ba -w4 -s': '
 }
 
-# Help (implementation-independent)
+# Help
 show_help() {
     cat << 'EOF'
 Async Shell Manager
 
-Commands:
-  info                       Current session/pane info
-  panes                      List all panes
-  split [h|v] [cmd]          Split pane, returns new pane_id
-  type <pane_id> <text>      Type text (no Enter)
-  key <pane_id> <key...>     Send special keys
-  submit <pane_id>           Enter + 3s wait + capture
-  capture <pane_id>          Visible area with line numbers
-  history <pane_id> [lines]  Scroll buffer with line numbers
-  focus <pane_id>            Focus on pane
-  kill <pane_id>             Close pane
-  current                    Get current pane id
-  detect                     Show detected environment
+COMMANDS:
+  new [cmd]                   Create new background shell, returns @N
+  list                        List managed shells
+  type <@N> <text>            Type text (no Enter)
+  key <@N> <key...>           Send special keys
+  submit <@N>                 Enter + capture
+  capture <@N> [-w sec] [-h lines]
+                              Capture output with line numbers
+                              -w: wait before capture (default: 0)
+                              -h: include scroll buffer (lines)
+  kill <@N>                   Close shell
+  current                     Get current shell ID
+  help                        Show this help
 
-Workflow:
-  1. split v "claude"        # New pane with agent
-  2. type %42 "message"      # Type text
-  3. submit %42              # Send + wait + capture
-  4. capture %42             # Check state
-  5. kill %42                # Cleanup
+UTIL COMMANDS:
+  util split [h|v] [cmd]      Split pane, returns %N
+  util focus <pane>           Focus pane within window
+  util panes                  List panes in current window
+
+SPECIAL KEYS:
+  Enter, Escape, Tab, Up, Down, Left, Right
+  C-c (Ctrl+C), C-d (Ctrl+D), C-l (Ctrl+L)
+
+WORKFLOW:
+  1. new "claude"             # Start background agent
+  2. type @1 "message"        # Type text
+  3. submit @1                # Send + capture
+  4. capture @1               # Check state
+  5. kill @1                  # Cleanup
+
+ID FORMAT:
+  @N  - Window ID (e.g., @1, @2)
+  %N  - Pane ID (e.g., %1, %2) for util commands
 EOF
 }
 
@@ -55,13 +68,13 @@ case "$CMD" in
     detect)
         echo "$IMPL"
         ;;
-    help)
+    help|-h|--help)
         show_help
         ;;
     *)
         if [ "$IMPL" = "none" ]; then
-            echo "Error: Not inside tmux or screen session"
-            echo "Start tmux first, then run this script"
+            echo "Error: Not inside a terminal multiplexer session"
+            echo "Start a session first, then run this script"
             exit 1
         fi
         

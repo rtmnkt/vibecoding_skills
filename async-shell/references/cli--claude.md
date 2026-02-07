@@ -8,9 +8,9 @@ Operation patterns for Claude Code CLI.
 
 precondition: prompt visible (>, ❯, etc.)
 steps:
-  1. type "<message>"
-  2. submit
-  3. capture → expect response or processing indicator
+  1. type @N "<message>"
+  2. submit @N
+  3. capture @N → expect response or processing indicator
 
 ---
 
@@ -18,17 +18,18 @@ steps:
 
 precondition: prompt visible
 steps:
-  1. type "/model" → submit
-  2. capture → expect selection list
-  3. key <number> or type selection
-  4. capture → confirm
+  1. type @N "/model"
+  2. submit @N
+  3. capture @N → expect selection list
+  4. key @N <number>
+  5. capture @N → confirm
 
 ---
 
 ## approve_tool
 
 precondition: approval prompt visible ([y/n], "Allow?", etc.)
-action: key y | n | a | d
+action: key @N y | n | a | d
   - y: allow once
   - n: deny once
   - a: always allow
@@ -39,14 +40,14 @@ action: key y | n | a | d
 ## cancel_operation
 
 precondition: processing indicator visible
-action: key Escape
+action: key @N Escape
 
 ---
 
 ## interrupt
 
 precondition: any
-action: key C-c
+action: key @N C-c
 
 ---
 
@@ -54,8 +55,9 @@ action: key C-c
 
 precondition: prompt visible
 steps:
-  1. type "/quit" or "/exit" → submit
-fallback: if processing → key Escape, retry
+  1. type @N "/quit"
+  2. submit @N
+fallback: if processing → key @N Escape, retry
 
 ---
 
@@ -81,7 +83,7 @@ fallback: if processing → key Escape, retry
 | /clear | clear conversation |
 | /quit, /exit | exit |
 
-Note: Commands may vary by CLI implementation.
+Note: Commands may vary by CLI version.
 
 ---
 
