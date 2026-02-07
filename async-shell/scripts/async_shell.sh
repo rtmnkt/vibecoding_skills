@@ -1,34 +1,45 @@
-#!/bin/bash
-# Async shell manager - interface with dynamic implementation loading
-# Usage: async_shell.sh <command> [args...]
+#!/usr/bin/env bash
+# Async Shell - Unified interface for background shell management
+# Supports tmux (primary) and screen (basic)
 
-set -e
+set -euo pipefail
 
-SCRIPT_DIR="$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Detect environment
+# Detect multiplexer environment
 detect_env() {
     if [ -n "$TMUX" ]; then echo "tmux"
     elif [ -n "$STY" ]; then echo "screen"
+    elif tmux list-sessions &>/dev/null; then echo "tmux"
+    elif command -v tmux &>/dev/null; then echo "tmux"
     else echo "none"
     fi
 }
 
 IMPL="${ASYNC_SHELL_IMPL:-$(detect_env)}"
+ASYNC_SESSION="${ASYNC_SHELL_SESSION:-async_shell}"
 CMD="${1:-help}"
+
+# Ensure session exists (for tmux)
+ensure_session() {
+    if [ "$IMPL" = "tmux" ]; then
+        tmux has-session -t "$ASYNC_SESSION" 2>/dev/null || \
+            tmux new-session -d -s "$ASYNC_SESSION"
+    fi
+}
 
 # Add line numbers to output
 add_line_numbers() {
     nl -ba -w4 -s': '
 }
 
-# Help
+# Show help
 show_help() {
     cat << 'EOF'
-Async Shell Manager
+USAGE: bash $0 <command> [args...]
 
 COMMANDS:
-  new [cmd]                   Create new background shell, returns @N
+  new [cmd]                   Create new shell, returns @N
   list                        List managed shells
   type <@N> <text>            Type text (no Enter)
   key <@N> <key...>           Send special keys
@@ -39,13 +50,12 @@ COMMANDS:
   current                     Get current shell ID
   help                        Show this help
 
-UTIL COMMANDS:
-  util split [h|v] [cmd]      Split pane, returns %N
-  util focus <pane>           Focus pane within window
-  util panes                  List panes in current window
+UTIL (pane operations):
+  util split <v|h> [cmd]      Split current pane
+  util focus <%N>             Focus pane
+  util panes                  List panes
 
-SPECIAL KEYS:
-  Enter, Escape, Tab, Up, Down, Left, Right
+KEYS:
   C-c (Ctrl+C), C-d (Ctrl+D), C-l (Ctrl+L)
 
 WORKFLOW:
@@ -56,23 +66,24 @@ WORKFLOW:
   5. kill @1                  # Cleanup
 
 ID FORMAT:
-  @N  - Window ID (e.g., @1, @2)
-  %N  - Pane ID (e.g., %1, %2) for util commands
+  @N = window ID (e.g., @1, @2)
+  %N = pane ID (e.g., %0, %1)
+
+SESSION:
+  Default session: async_shell
+  Override: ASYNC_SHELL_SESSION=my_session bash $0 list
 EOF
 }
 
-# Main dispatch
 case "$CMD" in
-    detect)
-        echo "$IMPL"
-        ;;
     help|-h|--help)
         show_help
+        exit 0
         ;;
     *)
         if [ "$IMPL" = "none" ]; then
-            echo "Error: Not inside a terminal multiplexer session"
-            echo "Start a session first, then run this script"
+            echo "Error: No terminal multiplexer available"
+            echo "Install tmux or screen first"
             exit 1
         fi
         
@@ -82,6 +93,8 @@ case "$CMD" in
             exit 1
         fi
         
+        ensure_session
+        export ASYNC_SESSION
         source "$IMPL_FILE"
         shift
         impl_dispatch "$CMD" "$@"

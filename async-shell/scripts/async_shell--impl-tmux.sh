@@ -1,12 +1,9 @@
-#!/bin/bash
-# Tmux implementation for async_shell
+#!/usr/bin/env bash
+# tmux implementation for async_shell
 
+# Get current window ID
 impl_get_current_window() {
     tmux display-message -p '#{window_id}'
-}
-
-impl_get_current_pane() {
-    tmux display-message -p '#{pane_id}'
 }
 
 # Parse capture options: [-h lines] <target>
@@ -28,6 +25,7 @@ parse_capture_opts() {
     done
 }
 
+# Main dispatcher
 impl_dispatch() {
     local cmd="$1"
     shift
@@ -37,30 +35,29 @@ impl_dispatch() {
             local original=$(impl_get_current_window)
             local new_window
             if [ $# -gt 0 ]; then
-                new_window=$(tmux new-window -d -P -F '#{window_id}' "$*")
+                new_window=$(tmux new-window -t "$ASYNC_SESSION" -d -P -F '#{window_id}' "$*")
             else
-                new_window=$(tmux new-window -d -P -F '#{window_id}')
+                new_window=$(tmux new-window -t "$ASYNC_SESSION" -d -P -F '#{window_id}')
             fi
             echo "Created: $new_window (from: $original)"
             ;;
         
         list)
-            tmux list-windows -F '#{window_id} #{window_index}: #{window_name} [#{window_width}x#{window_height}]#{?window_active, (active),}'
+            tmux list-windows -t "$ASYNC_SESSION" -F '#{window_id} #{window_index}: #{window_name} [#{window_width}x#{window_height}]#{?window_active, (active),}'
             ;;
         
         type)
             local target="$1"
             shift
-            # Send text without Enter - critical for TUI apps
-            tmux send-keys -t "$target" "$*"
+            local text="$*"
+            tmux send-keys -t "$target" -l "$text"
             ;;
         
         key)
             local target="$1"
             shift
-            # Send each key separately - critical for TUI apps
-            for k in "$@"; do
-                tmux send-keys -t "$target" "$k"
+            for key in "$@"; do
+                tmux send-keys -t "$target" "$key"
             done
             ;;
         
@@ -99,33 +96,24 @@ impl_dispatch() {
             shift
             case "$subcmd" in
                 split)
-                    local dir="${1:-v}"
-                    shift || true
-                    local split_flag="-v"
-                    [ "$dir" = "h" ] && split_flag="-h"
-                    
-                    local original_pane=$(impl_get_current_pane)
-                    local new_pane
+                    local direction="$1"
+                    shift
+                    local split_opt="-h"
+                    [ "$direction" = "v" ] && split_opt="-v"
                     if [ $# -gt 0 ]; then
-                        new_pane=$(tmux split-window $split_flag -d -P -F '#{pane_id}' "$*")
+                        tmux split-window $split_opt -d -P -F '#{pane_id}' "$*"
                     else
-                        new_pane=$(tmux split-window $split_flag -d -P -F '#{pane_id}')
+                        tmux split-window $split_opt -d -P -F '#{pane_id}'
                     fi
-                    echo "Created pane: $new_pane (original: $original_pane)"
                     ;;
-                
                 focus)
-                    local pane="$1"
-                    tmux select-pane -t "$pane"
+                    tmux select-pane -t "$1"
                     ;;
-                
                 panes)
-                    tmux list-panes -F '#{pane_id} #{pane_index}: #{pane_current_command} [#{pane_width}x#{pane_height}]#{?pane_active, (active),}'
+                    tmux list-panes -F '#{pane_id} #{pane_index}: [#{pane_width}x#{pane_height}]#{?pane_active, (active),}'
                     ;;
-                
                 *)
                     echo "Unknown util command: $subcmd"
-                    echo "Available: split, focus, panes"
                     exit 1
                     ;;
             esac
@@ -133,7 +121,6 @@ impl_dispatch() {
         
         *)
             echo "Unknown command: $cmd"
-            echo "Run with 'help' for usage"
             exit 1
             ;;
     esac

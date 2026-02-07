@@ -30,6 +30,16 @@ Run `bash $SCRIPT help` for command reference.
 
 ---
 
+## Session Management
+
+The script auto-creates a default session (`async_shell`) on first use. Override with:
+
+```bash
+ASYNC_SHELL_SESSION=my_session bash $SCRIPT list
+```
+
+---
+
 ## Patterns
 
 ### fire_and_forget

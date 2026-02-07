@@ -124,6 +124,17 @@ async-shell/
 | 完了検知 | 曖昧 | 責務外と明記 |
 | new推奨 | `new "claude"` | `new "bash"` |
 
+### v3 → v4
+
+| 項目 | v3 | v4 |
+|------|-----|-----|
+| セッション管理 | なし（セッション内必須） | 自動作成（`async_shell`） |
+| `ASYNC_SESSION` | なし | 環境変数でオーバーライド可能 |
+| `ensure_session()` | なし | 復活（初回使用時に作成） |
+| tmux外実行 | エラー | 対応（自動セッション作成） |
+| `-t "$ASYNC_SESSION"` | なし | new, listで使用 |
+| SKILL.md | Session Managementなし | セクション復活 |
+
 ---
 
 ## 上位スキルからの利用
@@ -187,3 +198,6 @@ tmux send-keys Enter
 4. `capture -h 100` でスクロールバッファが取得できるか
 5. `util split` 後にペインIDが正しく返却されるか
 6. `submit` がEnterのみ送信しcaptureしないか
+7. tmux外から実行時にセッションが自動作成されるか
+8. `ASYNC_SHELL_SESSION` でセッション名をオーバーライドできるか
+9. `list` と `new` が指定セッション内で動作するか
