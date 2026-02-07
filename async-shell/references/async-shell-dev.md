@@ -15,7 +15,7 @@
 
 ### 抽象化
 
-- SKILL.md に実装詳細（tmux/screen）を一切記載しない
+- SKILL.md に実装詳細（tmux）を一切記載しない
 - Claudeが直接tmuxコマンドを使うことを防止
 - 将来的な実装差し替えを可能に
 
@@ -92,8 +92,7 @@ async-shell/
 ├── SKILL.md                        # スキル定義
 ├── scripts/
 │   ├── async_shell.sh              # インターフェース + help
-│   ├── async_shell--impl-tmux.sh   # tmux実装
-│   └── async_shell--impl-screen.sh # 未実装エラーのみ
+│   └── async_shell--impl-tmux.sh   # tmux実装
 └── references/
     └── cli--claude.md              # Claude CLI操作パターン
 ```

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Async Shell - Unified interface for background shell management
-# Supports tmux (primary) and screen (basic)
+# Supports tmux
 
 set -euo pipefail
 
@@ -9,7 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Detect multiplexer environment
 detect_env() {
     if [ -n "$TMUX" ]; then echo "tmux"
-    elif [ -n "$STY" ]; then echo "screen"
     elif tmux list-sessions &>/dev/null; then echo "tmux"
     elif command -v tmux &>/dev/null; then echo "tmux"
     else echo "none"
@@ -83,7 +82,7 @@ case "$CMD" in
     *)
         if [ "$IMPL" = "none" ]; then
             echo "Error: No terminal multiplexer available"
-            echo "Install tmux or screen first"
+            echo "Install tmux first"
             exit 1
         fi
         
