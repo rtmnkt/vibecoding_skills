@@ -48,7 +48,7 @@ goal: run independent task, collect result via file
 when: no interaction needed, result can be written to file
 
 ```bash
-$SCRIPT new "bash -c 'your_command > /tmp/result.txt'"
+$SCRIPT new "your_command > /tmp/result.txt"
 # check /tmp/result.txt when needed
 ```
 
@@ -60,9 +60,9 @@ goal: run multiple independent tasks concurrently
 when: several unrelated tasks
 
 ```bash
-$SCRIPT new "bash -c 'task1 > /tmp/r1.txt'" # → @1
-$SCRIPT new "bash -c 'task2 > /tmp/r2.txt'" # → @2
-$SCRIPT new "bash -c 'task3 > /tmp/r3.txt'" # → @3
+$SCRIPT new "task1 > /tmp/r1.txt" # → @1
+$SCRIPT new "task2 > /tmp/r2.txt" # → @2
+$SCRIPT new "task3 > /tmp/r3.txt" # → @3
 # check result files for completion
 $SCRIPT kill @1 && $SCRIPT kill @2 && $SCRIPT kill @3
 ```
@@ -135,7 +135,10 @@ $SCRIPT type @N "command" && $SCRIPT submit @N
 
 ## Notes
 
-- **Environment variables**: Use `new "bash"` then set env vars, or `new "bash -c 'VAR=val command'"`
+- **When to use bash**:
+  - Use `new "bash"` for interactive sessions (multiple commands, `cd`, `export`, loops, pipes)
+  - Use `new "command"` for single commands with redirection (e.g., `command > /tmp/out.txt`)
+  - Use `new "VAR=val command"` for environment variables (e.g., `ENV=prod npm start`)
 - **Completion detection**: Use result files (recommended) or poll with `capture`
 - **capture**: Returns output from bottom of scroll buffer. `-h N` gets last N lines (bottom-relative)
 - **submit**: Sends Enter only, no capture
