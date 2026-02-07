@@ -25,6 +25,11 @@ ensure_session() {
     fi
 }
 
+# Strip trailing blank lines from output
+strip_trailing_blanks() {
+    awk '/./{last=NR} {a[NR]=$0} END{for(i=1;i<=last;i++) print a[i]}'
+}
+
 # Add line numbers to output (bottom-relative: 1 is the last line)
 add_line_numbers() {
     awk '{ a[NR] = $0 } END { for (i = NR; i >= 1; i--) printf "%4d: %s\n", NR - i + 1, a[i] }'
@@ -42,7 +47,8 @@ COMMANDS:
   key <@N> <key...>           Send special keys
   submit <@N>                 Send Enter
   capture <@N> [-h lines]     Capture output with line numbers
-                              -h: include scroll buffer (lines)
+                              -h: last N lines (including history)
+  capture-diff <@N>           Diff since last capture-diff (unified format)
   kill <@N>                   Close shell
   current                     Get current shell ID
   help                        Show this help
@@ -59,8 +65,9 @@ WORKFLOW:
   1. new "bash"               # Start background shell
   2. type @1 "command"        # Type text
   3. submit @1                # Send Enter
-  4. capture @1               # Check output
-  5. kill @1                  # Cleanup
+  4. capture @1               # View current screen
+  5. capture-diff @1          # Monitor changes (polling)
+  6. kill @1                  # Cleanup
 
 ID FORMAT:
   @N = window ID (e.g., @1, @2)
