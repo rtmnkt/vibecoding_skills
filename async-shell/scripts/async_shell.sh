@@ -10,23 +10,12 @@ SCRIPT_DIR="$(dirname "$0")"
 detect_env() {
     if [ -n "$TMUX" ]; then echo "tmux"
     elif [ -n "$STY" ]; then echo "screen"
-    elif tmux list-sessions &>/dev/null; then echo "tmux"
-    elif command -v tmux &>/dev/null; then echo "tmux"
     else echo "none"
     fi
 }
 
 IMPL="${ASYNC_SHELL_IMPL:-$(detect_env)}"
-ASYNC_SESSION="${ASYNC_SHELL_SESSION:-async_shell}"
 CMD="${1:-help}"
-
-# Ensure session exists (for tmux)
-ensure_session() {
-    if [ "$IMPL" = "tmux" ]; then
-        tmux has-session -t "$ASYNC_SESSION" 2>/dev/null || \
-            tmux new-session -d -s "$ASYNC_SESSION"
-    fi
-}
 
 # Add line numbers to output
 add_line_numbers() {
@@ -43,10 +32,8 @@ COMMANDS:
   list                        List managed shells
   type <@N> <text>            Type text (no Enter)
   key <@N> <key...>           Send special keys
-  submit <@N>                 Enter + capture
-  capture <@N> [-w sec] [-h lines]
-                              Capture output with line numbers
-                              -w: wait before capture (default: 0)
+  submit <@N>                 Send Enter
+  capture <@N> [-h lines]     Capture output with line numbers
                               -h: include scroll buffer (lines)
   kill <@N>                   Close shell
   current                     Get current shell ID
@@ -62,10 +49,10 @@ SPECIAL KEYS:
   C-c (Ctrl+C), C-d (Ctrl+D), C-l (Ctrl+L)
 
 WORKFLOW:
-  1. new "claude"             # Start background agent
-  2. type @1 "message"        # Type text
-  3. submit @1                # Send + capture
-  4. capture @1               # Check state
+  1. new "bash"               # Start background shell
+  2. type @1 "command"        # Type text
+  3. submit @1                # Send Enter
+  4. capture @1               # Check output
   5. kill @1                  # Cleanup
 
 ID FORMAT:
@@ -84,8 +71,8 @@ case "$CMD" in
         ;;
     *)
         if [ "$IMPL" = "none" ]; then
-            echo "Error: No terminal multiplexer available"
-            echo "Install tmux or screen first"
+            echo "Error: Not inside a terminal multiplexer session"
+            echo "Start a session first, then run this script"
             exit 1
         fi
         
@@ -95,8 +82,6 @@ case "$CMD" in
             exit 1
         fi
         
-        ensure_session
-        export ASYNC_SESSION
         source "$IMPL_FILE"
         shift
         impl_dispatch "$CMD" "$@"

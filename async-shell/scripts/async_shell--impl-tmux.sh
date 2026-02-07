@@ -9,18 +9,13 @@ impl_get_current_pane() {
     tmux display-message -p '#{pane_id}'
 }
 
-# Parse capture options: [-w sec] [-h lines] <target>
+# Parse capture options: [-h lines] <target>
 parse_capture_opts() {
-    CAPTURE_WAIT=0
     CAPTURE_HISTORY=""
     CAPTURE_TARGET=""
     
     while [ $# -gt 0 ]; do
         case "$1" in
-            -w)
-                CAPTURE_WAIT="$2"
-                shift 2
-                ;;
             -h)
                 CAPTURE_HISTORY="$2"
                 shift 2
@@ -42,15 +37,15 @@ impl_dispatch() {
             local original=$(impl_get_current_window)
             local new_window
             if [ $# -gt 0 ]; then
-                new_window=$(tmux new-window -t "$ASYNC_SESSION" -d -P -F '#{window_id}' "$*")
+                new_window=$(tmux new-window -d -P -F '#{window_id}' "$*")
             else
-                new_window=$(tmux new-window -t "$ASYNC_SESSION" -d -P -F '#{window_id}')
+                new_window=$(tmux new-window -d -P -F '#{window_id}')
             fi
             echo "Created: $new_window (from: $original)"
             ;;
         
         list)
-            tmux list-windows -t "$ASYNC_SESSION" -F '#{window_id} #{window_index}: #{window_name} [#{window_width}x#{window_height}]#{?window_active, (active),}'
+            tmux list-windows -F '#{window_id} #{window_index}: #{window_name} [#{window_width}x#{window_height}]#{?window_active, (active),}'
             ;;
         
         type)
@@ -71,11 +66,7 @@ impl_dispatch() {
         
         submit)
             local target="$1"
-            # Send Enter separately from any previous text
             tmux send-keys -t "$target" Enter
-            # Brief wait then capture
-            sleep 0.5
-            tmux capture-pane -t "$target" -p | add_line_numbers
             ;;
         
         capture)
@@ -86,12 +77,6 @@ impl_dispatch() {
                 exit 1
             fi
             
-            # Wait if requested
-            if [ "$CAPTURE_WAIT" -gt 0 ] 2>/dev/null; then
-                sleep "$CAPTURE_WAIT"
-            fi
-            
-            # Capture with or without history
             if [ -n "$CAPTURE_HISTORY" ]; then
                 tmux capture-pane -t "$CAPTURE_TARGET" -p -S "-$CAPTURE_HISTORY" | add_line_numbers
             else
