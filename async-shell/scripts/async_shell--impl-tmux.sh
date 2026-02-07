@@ -118,6 +118,7 @@ impl_dispatch() {
             current_ts=$(tmux display-message -t "$target" -p '#{window_activity}')
             local stored_ts
             stored_ts=$(cat "$ts_file" 2>/dev/null || echo "0")
+            [[ "$stored_ts" =~ ^[0-9]+$ ]] || stored_ts=0
 
             if [ "$current_ts" = "$stored_ts" ] && [ -f "$snapshot" ]; then
                 echo "(no change)"
