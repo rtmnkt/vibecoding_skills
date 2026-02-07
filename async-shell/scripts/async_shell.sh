@@ -2,8 +2,6 @@
 # Async Shell - Unified interface for background shell management
 # Supports tmux
 
-set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Detect multiplexer environment
