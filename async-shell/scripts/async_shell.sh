@@ -25,9 +25,9 @@ ensure_session() {
     fi
 }
 
-# Add line numbers to output
+# Add line numbers to output (bottom-relative: 1 is the last line)
 add_line_numbers() {
-    nl -ba -w4 -s': '
+    awk '{ a[NR] = $0 } END { for (i = NR; i >= 1; i--) printf "%4d: %s\n", NR - i + 1, a[i] }'
 }
 
 # Show help
