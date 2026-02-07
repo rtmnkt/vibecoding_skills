@@ -69,7 +69,7 @@ impl_dispatch() {
             tmux send-keys -t "$target" -l "$text"
             
             if [ -n "$submit_flag" ]; then
-                tmux send-keys -t "$target" Enter
+                impl_dispatch submit "$target"
             fi
             ;;
         
