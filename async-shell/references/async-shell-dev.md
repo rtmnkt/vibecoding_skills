@@ -80,7 +80,7 @@ C-c (Ctrl+C), C-d (Ctrl+D), C-l (Ctrl+L)
 ### 連結操作
 
 ```bash
-bash $SCRIPT type @N "command" && bash $SCRIPT submit @N
+$SCRIPT type @N "command" && $SCRIPT submit @N
 ```
 
 ---

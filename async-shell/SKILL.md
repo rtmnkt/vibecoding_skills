@@ -12,7 +12,7 @@ SCRIPT="/mnt/skills/user/async-shell/scripts/async_shell.sh"
 chmod +x "$SCRIPT"
 ```
 
-Run `bash $SCRIPT help` for command reference.
+Run `$SCRIPT help` for command reference.
 
 ---
 
@@ -35,7 +35,7 @@ Run `bash $SCRIPT help` for command reference.
 The script auto-creates a default session (`async_shell`) on first use. Override with:
 
 ```bash
-ASYNC_SHELL_SESSION=my_session bash $SCRIPT list
+ASYNC_SHELL_SESSION=my_session $SCRIPT list
 ```
 
 ---
@@ -48,7 +48,7 @@ goal: run independent task, collect result via file
 when: no interaction needed, result can be written to file
 
 ```bash
-bash $SCRIPT new "bash -c 'your_command > /tmp/result.txt'"
+$SCRIPT new "bash -c 'your_command > /tmp/result.txt'"
 # check /tmp/result.txt when needed
 ```
 
@@ -60,11 +60,11 @@ goal: run multiple independent tasks concurrently
 when: several unrelated tasks
 
 ```bash
-bash $SCRIPT new "bash -c 'task1 > /tmp/r1.txt'" # → @1
-bash $SCRIPT new "bash -c 'task2 > /tmp/r2.txt'" # → @2
-bash $SCRIPT new "bash -c 'task3 > /tmp/r3.txt'" # → @3
+$SCRIPT new "bash -c 'task1 > /tmp/r1.txt'" # → @1
+$SCRIPT new "bash -c 'task2 > /tmp/r2.txt'" # → @2
+$SCRIPT new "bash -c 'task3 > /tmp/r3.txt'" # → @3
 # check result files for completion
-bash $SCRIPT kill @1 && bash $SCRIPT kill @2 && bash $SCRIPT kill @3
+$SCRIPT kill @1 && $SCRIPT kill @2 && $SCRIPT kill @3
 ```
 
 ---
@@ -75,12 +75,12 @@ goal: coordinate with another Claude instance
 when: need fresh perspective, objective review, pair programming
 
 ```bash
-bash $SCRIPT new "bash"                          # → @N
-bash $SCRIPT type @N "claude" && bash $SCRIPT submit @N
-bash $SCRIPT capture @N                          # wait for prompt
-bash $SCRIPT type @N "<message>" && bash $SCRIPT submit @N
-bash $SCRIPT capture @N                          # read response
-bash $SCRIPT kill @N
+$SCRIPT new "bash"                          # → @N
+$SCRIPT type @N "claude" && $SCRIPT submit @N
+$SCRIPT capture @N                          # wait for prompt
+$SCRIPT type @N "<message>" && $SCRIPT submit @N
+$SCRIPT capture @N                          # read response
+$SCRIPT kill @N
 ```
 
 note: provide complete context in message; agent has no access to your conversation
@@ -93,21 +93,21 @@ goal: multiple agents working concurrently
 when: need multiple independent perspectives or parallel subtasks
 
 ```bash
-bash $SCRIPT new "bash" # → @1
-bash $SCRIPT new "bash" # → @2
+$SCRIPT new "bash" # → @1
+$SCRIPT new "bash" # → @2
 
-bash $SCRIPT type @1 "claude" && bash $SCRIPT submit @1
-bash $SCRIPT type @2 "claude" && bash $SCRIPT submit @2
+$SCRIPT type @1 "claude" && $SCRIPT submit @1
+$SCRIPT type @2 "claude" && $SCRIPT submit @2
 
 # send tasks
-bash $SCRIPT type @1 "<task A>" && bash $SCRIPT submit @1
-bash $SCRIPT type @2 "<task B>" && bash $SCRIPT submit @2
+$SCRIPT type @1 "<task A>" && $SCRIPT submit @1
+$SCRIPT type @2 "<task B>" && $SCRIPT submit @2
 
 # collect results
-bash $SCRIPT capture @1
-bash $SCRIPT capture @2
+$SCRIPT capture @1
+$SCRIPT capture @2
 
-bash $SCRIPT kill @1 && bash $SCRIPT kill @2
+$SCRIPT kill @1 && $SCRIPT kill @2
 ```
 
 ---
@@ -115,19 +115,19 @@ bash $SCRIPT kill @1 && bash $SCRIPT kill @2
 ## Basic Operations
 
 ```bash
-bash $SCRIPT new "bash"              # create shell → @N
-bash $SCRIPT list                    # list shells
-bash $SCRIPT type @N "<text>"        # type text (no Enter)
-bash $SCRIPT submit @N               # send Enter
-bash $SCRIPT capture @N              # get visible output
-bash $SCRIPT capture @N -h 100       # include scroll buffer
-bash $SCRIPT kill @N                 # close shell
-bash $SCRIPT current                 # get current shell ID
+$SCRIPT new "bash"              # create shell → @N
+$SCRIPT list                    # list shells
+$SCRIPT type @N "<text>"        # type text (no Enter)
+$SCRIPT submit @N               # send Enter
+$SCRIPT capture @N              # get visible output
+$SCRIPT capture @N -h 100       # include scroll buffer
+$SCRIPT kill @N                 # close shell
+$SCRIPT current                 # get current shell ID
 ```
 
 **Chained operations:**
 ```bash
-bash $SCRIPT type @N "command" && bash $SCRIPT submit @N
+$SCRIPT type @N "command" && $SCRIPT submit @N
 ```
 
 ---
@@ -137,10 +137,10 @@ bash $SCRIPT type @N "command" && bash $SCRIPT submit @N
 For side-by-side display within a single window:
 
 ```bash
-bash $SCRIPT util split v "bash"     # vertical split → %N
-bash $SCRIPT util split h "bash"     # horizontal split → %N
-bash $SCRIPT util panes              # list panes
-bash $SCRIPT util focus %N           # switch focus
+$SCRIPT util split v "bash"     # vertical split → %N
+$SCRIPT util split h "bash"     # horizontal split → %N
+$SCRIPT util panes              # list panes
+$SCRIPT util focus %N           # switch focus
 ```
 
 Use window operations (`new`, `kill`) for background tasks.
