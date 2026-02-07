@@ -38,7 +38,7 @@ USAGE: bash $0 <command> [args...]
 COMMANDS:
   new [cmd]                   Create new shell, returns @N
   list                        List managed shells
-  type <@N> <text>            Type text (no Enter)
+  type <@N> <text> [-s]       Type text (no Enter), -s to auto-submit
   key <@N> <key...>           Send special keys
   submit <@N>                 Send Enter
   capture <@N> [-h lines]     Capture output with line numbers
