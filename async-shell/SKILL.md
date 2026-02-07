@@ -128,11 +128,11 @@ $SCRIPT current                 # get current shell ID
 
 **Chained operations:**
 ```bash
-# Old way (still supported)
-$SCRIPT type @N "command" && $SCRIPT submit @N
+# Type then capture output
+$SCRIPT type @N "ls -la" -s && $SCRIPT capture @N
 
-# New way (simplified)
-$SCRIPT type @N "command" -s
+# Type with menu selection
+$SCRIPT type @N "1" && $SCRIPT capture @N
 ```
 
 **Important:** Use `-s` flag only for commands that require Enter. For single-character menu inputs (e.g., `1`, `2`, `q`, `y`), omit `-s` as these accept input immediately.
