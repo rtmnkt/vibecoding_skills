@@ -10,12 +10,23 @@ SCRIPT_DIR="$(dirname "$0")"
 detect_env() {
     if [ -n "$TMUX" ]; then echo "tmux"
     elif [ -n "$STY" ]; then echo "screen"
+    elif tmux list-sessions &>/dev/null; then echo "tmux"
+    elif command -v tmux &>/dev/null; then echo "tmux"
     else echo "none"
     fi
 }
 
 IMPL="${ASYNC_SHELL_IMPL:-$(detect_env)}"
+ASYNC_SESSION="${ASYNC_SHELL_SESSION:-async_shell}"
 CMD="${1:-help}"
+
+# Ensure session exists (for tmux)
+ensure_session() {
+    if [ "$IMPL" = "tmux" ]; then
+        tmux has-session -t "$ASYNC_SESSION" 2>/dev/null || \
+            tmux new-session -d -s "$ASYNC_SESSION"
+    fi
+}
 
 # Add line numbers to output
 add_line_numbers() {
@@ -73,8 +84,8 @@ case "$CMD" in
         ;;
     *)
         if [ "$IMPL" = "none" ]; then
-            echo "Error: Not inside a terminal multiplexer session"
-            echo "Start a session first, then run this script"
+            echo "Error: No terminal multiplexer available"
+            echo "Install tmux or screen first"
             exit 1
         fi
         
@@ -84,6 +95,8 @@ case "$CMD" in
             exit 1
         fi
         
+        ensure_session
+        export ASYNC_SESSION
         source "$IMPL_FILE"
         shift
         impl_dispatch "$CMD" "$@"

@@ -42,15 +42,15 @@ impl_dispatch() {
             local original=$(impl_get_current_window)
             local new_window
             if [ $# -gt 0 ]; then
-                new_window=$(tmux new-window -d -P -F '#{window_id}' "$*")
+                new_window=$(tmux new-window -t "$ASYNC_SESSION" -d -P -F '#{window_id}' "$*")
             else
-                new_window=$(tmux new-window -d -P -F '#{window_id}')
+                new_window=$(tmux new-window -t "$ASYNC_SESSION" -d -P -F '#{window_id}')
             fi
             echo "Created: $new_window (from: $original)"
             ;;
         
         list)
-            tmux list-windows -F '#{window_id} #{window_index}: #{window_name} [#{window_width}x#{window_height}]#{?window_active, (active),}'
+            tmux list-windows -t "$ASYNC_SESSION" -F '#{window_id} #{window_index}: #{window_name} [#{window_width}x#{window_height}]#{?window_active, (active),}'
             ;;
         
         type)
