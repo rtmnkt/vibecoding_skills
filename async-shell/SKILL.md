@@ -132,21 +132,6 @@ $SCRIPT type @N "command" && $SCRIPT submit @N
 
 ---
 
-## Pane Operations (util)
-
-For side-by-side display within a single window:
-
-```bash
-$SCRIPT util split v "bash"     # vertical split → %N
-$SCRIPT util split h "bash"     # horizontal split → %N
-$SCRIPT util panes              # list panes
-$SCRIPT util focus %N           # switch focus
-```
-
-Use window operations (`new`, `kill`) for background tasks.
-Use pane operations only when visual side-by-side is needed.
-
----
 
 ## Notes
 
