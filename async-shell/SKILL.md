@@ -119,7 +119,7 @@ $SCRIPT new "bash"              # create shell → @N
 $SCRIPT list                    # list shells
 $SCRIPT type @N "<text>"        # type text (no Enter)
 $SCRIPT submit @N               # send Enter
-$SCRIPT capture @N              # get visible output (bottom-relative)
+$SCRIPT capture @N              # get visible output
 $SCRIPT capture @N -h 100       # get last 100 lines from scroll buffer (bottom-relative)
 $SCRIPT kill @N                 # close shell
 $SCRIPT current                 # get current shell ID
