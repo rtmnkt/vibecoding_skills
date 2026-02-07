@@ -51,8 +51,9 @@ TUIアプリ（Claude CLI等）では `send-keys "text" Enter` を一括送信�
 | `list` | ウィンドウ一覧 |
 | `type <@N> <text>` | テキスト入力（Enterなし） |
 | `submit <@N>` | Enter送信 |
-| `capture <@N> [-h lines]` | 出力取得 |
-| `kill <@N>` | ウィンドウ終了 |
+| `capture <@N> [-h lines]` | 画面出力取得（全文） |
+| `capture-diff <@N>` | 前回との差分取得 |
+| `kill <@N>` | ウィンドウ終了（状態ファイルも削除） |
 | `current` | 現在のウィンドウID |
 | `help` | コマンド一覧 |
 
@@ -60,7 +61,50 @@ TUIアプリ（Claude CLI等）では `send-keys "text" Enter` を一括送信�
 
 | オプション | 説明 |
 |-----------|------|
-| `-h lines` | スクロールバッファを含める行数 |
+| `-h lines` | 末尾N行を取得（履歴含む） |
+
+### capture-diff 設計
+
+**目的**: ポーリング時のコンテキスト肥大化を防ぐ
+
+**変化検知メカニズム（2段階）:**
+
+1. **Activity timestamp**（`#{window_activity}`）: tmuxが内部で追跡するウィンドウ最終出力時刻（エポック秒）。画面に何か出力されるたびに更新される。push型の常時監視ではなく、tmuxの既存追跡をreadするだけ
+2. **Snapshot比較**: activity検知後に画面内容を前回スナップショットと`diff -u`で比較
+
+**フロー:**
+```
+capture-diff @N
+  │
+  ├─ activity timestamp 同一 → "(no change)"（偽陰性なし）
+  │
+  └─ activity timestamp 更新あり
+       │
+       ├─ スナップショットなし → "(initial)" + 全文（初回）
+       │
+       ├─ 内容変化あり → unified diff 出力
+       │
+       └─ 内容同一 → "(output detected, screen unchanged)"
+```
+
+**状態ファイル:**
+```
+/tmp/async_shell_snapshot_<target>.txt  # 前回画面内容
+/tmp/async_shell_ts_<target>.txt        # 前回activity timestamp
+```
+
+`kill` 時に自動削除。
+
+**出力形式**: unified diff（`---`/`+++`ヘッダーと`@@`ハンクマーカーは除去）
+```
+ context line
+-removed line
++added line
+```
+
+**制約:**
+- activity timestampはエポック秒精度。同一秒内の出力→再キャプチャでは検知漏れの可能性あり（実用上は問題なし）
+- `capture`とは独立。`capture`呼び出しは`capture-diff`のスナップショットに影響しない
 
 ### utilコマンド（ペイン操作）
 
@@ -134,6 +178,16 @@ async-shell/
 | `-t "$ASYNC_SESSION"` | なし | new, listで使用 |
 | SKILL.md | Session Managementなし | セクション復活 |
 
+### v4 → v5
+
+| 項目 | v4 | v5 |
+|------|-----|-----|
+| `capture -h` | scroll buffer N行 + 可視領域 | 末尾N行（`tail -n`で正確に） |
+| `capture-diff` | なし | 新規追加（activity timestamp + snapshot diff） |
+| `kill` | ウィンドウ終了のみ | 状態ファイルも削除 |
+| fire_and_forget例 | ファイルリダイレクト | capture/capture-diff使用 |
+| SKILL.md | captureのみ | Screen Operationsセクションで用途別に整理 |
+
 ---
 
 ## 上位スキルからの利用
@@ -141,7 +195,7 @@ async-shell/
 タスクスキル等から以下の用途で使用される想定:
 
 1. **サブエージェント起動**: `new "bash"` → `type @N "claude"` → `submit @N`
-2. **タスク状態確認**: `capture` または結果ファイル確認
+2. **タスク状態確認**: `capture-diff`（ポーリング）または `capture`（全文確認）
 3. **入力送信**: `type @N "text" && submit @N`
 
 async-shellは上位スキルの詳細を知らない（依存方向を逆にしない）。
@@ -194,9 +248,15 @@ tmux send-keys Enter
 1. `type @N "text"` + `submit @N` でClaude CLIに正しく送信されるか
 2. `new` 後にフォーカスが元のウィンドウに残るか（`-d` オプション）
 3. `capture` の行番号が正しく付与されるか
-4. `capture -h 100` でスクロールバッファが取得できるか
+4. `capture -h N` で正確にN行が返るか
 5. `util split` 後にペインIDが正しく返却されるか
 6. `submit` がEnterのみ送信しcaptureしないか
 7. tmux外から実行時にセッションが自動作成されるか
 8. `ASYNC_SHELL_SESSION` でセッション名をオーバーライドできるか
 9. `list` と `new` が指定セッション内で動作するか
+10. `capture-diff` 初回で `(initial)` + 全文が返るか
+11. `capture-diff` 変化なしで `(no change)` が返るか
+12. `capture-diff` 変化ありでunified diff形式が返るか
+13. `capture-diff` activity検知 + 画面同一で `(output detected, screen unchanged)` が返るか
+14. `kill` でスナップショット・タイムスタンプファイルが削除されるか
+15. `capture-diff` でTUIアプリ（nano等）の画面変化が検知されるか

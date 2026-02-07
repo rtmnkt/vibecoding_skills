@@ -21,7 +21,7 @@ Run `$SCRIPT help` for command reference.
 **This skill provides:**
 - Background shell creation and termination
 - Text input and key sending
-- Screen output capture
+- Screen output capture (full view and differential)
 
 **Out of scope (caller's responsibility):**
 - Task completion detection and waiting
@@ -44,12 +44,13 @@ ASYNC_SHELL_SESSION=my_session $SCRIPT list
 
 ### fire_and_forget
 
-goal: run independent task, collect result via file
-when: no interaction needed, result can be written to file
+goal: run independent task, check result when needed
+when: no interaction needed
 
 ```bash
-$SCRIPT new "your_command > /tmp/result.txt"
-# check /tmp/result.txt when needed
+$SCRIPT new "your_command"              # → @N
+$SCRIPT capture @N                      # check output when needed
+$SCRIPT kill @N
 ```
 
 ---
@@ -60,10 +61,13 @@ goal: run multiple independent tasks concurrently
 when: several unrelated tasks
 
 ```bash
-$SCRIPT new "task1 > /tmp/r1.txt" # → @1
-$SCRIPT new "task2 > /tmp/r2.txt" # → @2
-$SCRIPT new "task3 > /tmp/r3.txt" # → @3
-# check result files for completion
+$SCRIPT new "task1" # → @1
+$SCRIPT new "task2" # → @2
+$SCRIPT new "task3" # → @3
+# poll for completion
+$SCRIPT capture-diff @1
+$SCRIPT capture-diff @2
+$SCRIPT capture-diff @3
 $SCRIPT kill @1 && $SCRIPT kill @2 && $SCRIPT kill @3
 ```
 
@@ -112,6 +116,38 @@ $SCRIPT kill @1 && $SCRIPT kill @2
 
 ---
 
+## Screen Operations
+
+### capture - View current screen
+
+View the current screen state. For one-shot checks and interactive sessions.
+
+```bash
+$SCRIPT capture @N              # visible screen with line numbers
+$SCRIPT capture @N -h 100       # last 100 lines with line numbers
+```
+
+### capture-diff - Monitor for changes
+
+Detect and show changes since last `capture-diff` call. For polling loops.
+Uses unified diff format (`-`/`+` prefixes). Returns `(no change)` when nothing happened.
+
+```bash
+$SCRIPT capture-diff @N         # diff since last check
+```
+
+**Output patterns:**
+- `(initial)` + full content: first call, baseline established
+- `(no change)`: no activity since last check
+- `(output detected, screen unchanged)`: activity detected but screen returned to same state
+- Unified diff: content changed (` ` = context, `-` = removed, `+` = added)
+
+**When to use which:**
+- `capture`: view current state, interactive sessions, reading responses
+- `capture-diff`: polling for completion, monitoring background tasks
+
+---
+
 ## Basic Operations
 
 ```bash
@@ -120,8 +156,9 @@ $SCRIPT list                    # list shells
 $SCRIPT type @N "<text>"        # type text (no Enter)
 $SCRIPT type @N "<text>" -s     # type text and submit (auto-Enter)
 $SCRIPT submit @N               # send Enter
-$SCRIPT capture @N              # get visible output
-$SCRIPT capture @N -h 100       # get last 100 lines from scroll buffer (bottom-relative)
+$SCRIPT capture @N              # view current screen
+$SCRIPT capture @N -h 100       # last 100 lines
+$SCRIPT capture-diff @N         # diff since last check
 $SCRIPT kill @N                 # close shell
 $SCRIPT current                 # get current shell ID
 ```
@@ -144,10 +181,11 @@ $SCRIPT type @N "1" && $SCRIPT capture @N
 
 - **When to use bash**:
   - Use `new "bash"` for interactive sessions (multiple commands, `cd`, `export`, loops, pipes)
-  - Use `new "command"` for single commands with redirection (e.g., `command > /tmp/out.txt`)
+  - Use `new "command"` for single commands (e.g., `npm test`, `make build`)
   - Use `new "VAR=val command"` for environment variables (e.g., `ENV=prod npm start`)
-- **Completion detection**: Use result files (recommended) or poll with `capture`
-- **capture**: Returns output from bottom of scroll buffer. `-h N` gets last N lines (bottom-relative)
+- **Completion detection**: Poll with `capture-diff` (recommended) or check with `capture`
+- **capture**: Returns visible screen with line numbers. `-h N` gets last N lines
+- **capture-diff**: Returns unified diff since last check. Detects all activity via timestamps; `(no change)` is reliable
 - **submit**: Sends Enter only, no capture
 
 ---
