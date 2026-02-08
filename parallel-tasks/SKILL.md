@@ -78,13 +78,17 @@ Coordinator
 
 ## async-shell Script Usage
 
+Script path: `/mnt/skills/user/async-shell/scripts/async_shell.sh`
+
+```bash
+# First make executable (once per session)
+chmod +x /mnt/skills/user/async-shell/scripts/async_shell.sh
+```
+
+**Always define `SCRIPT` variable in the same Bash call when using it:**
+
 ```bash
 SCRIPT="/mnt/skills/user/async-shell/scripts/async_shell.sh"
-
-# Make executable
-chmod +x $SCRIPT
-
-# Direct execution
 $SCRIPT new bash
 $SCRIPT type @2 "command"
 $SCRIPT submit @2
