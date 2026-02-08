@@ -7,19 +7,12 @@ description: Coordinate with interactive async agents in separate contexts. Run 
 
 Manage background shells for parallel task execution and async agent coordination.
 
-Script path: `/mnt/skills/user/async-shell/scripts/async_shell.sh`
-
-```bash
-# First make executable (once per session)
-chmod +x /mnt/skills/user/async-shell/scripts/async_shell.sh
-```
-
-All examples below use `$SCRIPT` as shorthand. **Always define the variable in the same Bash call:**
-
 ```bash
 SCRIPT="/mnt/skills/user/async-shell/scripts/async_shell.sh"
-$SCRIPT help    # command reference
+chmod +x "$SCRIPT"
 ```
+
+Run `$SCRIPT help` for command reference.
 
 ---
 
