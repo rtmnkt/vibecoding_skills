@@ -47,8 +47,8 @@ ${CLAUDE_CODE} -p "You are coordinator. Execute:
 ```
 Coordinator
   ├─ TaskCreate task1, task2, task3, task4, task5
-  ├─ SCRIPT="/mnt/skills/user/async-shell/scripts/async_shell.sh"
-  ├─ chmod +x $SCRIPT  # Make executable
+  ├─ chmod +x scripts/async_shell.sh  # async-shell skill
+  ├─ SCRIPT="scripts/async_shell.sh"
   ├─ $SCRIPT new bash → @2, @3, @4, @5, @6
   ├─ Setup each session:
   │   $SCRIPT type @N "export CLAUDE_CODE_TASK_LIST_ID=my-project"
@@ -79,12 +79,10 @@ Coordinator
 ## async-shell Script Usage
 
 ```bash
-SCRIPT="/mnt/skills/user/async-shell/scripts/async_shell.sh"
+# async-shell skill script (use relative path from skill base dir)
+chmod +x scripts/async_shell.sh
+SCRIPT="scripts/async_shell.sh"
 
-# Make executable
-chmod +x $SCRIPT
-
-# Direct execution
 $SCRIPT new bash
 $SCRIPT type @2 "command"
 $SCRIPT submit @2

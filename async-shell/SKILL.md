@@ -8,8 +8,8 @@ description: Coordinate with interactive async agents in separate contexts. Run 
 Manage background shells for parallel task execution and async agent coordination.
 
 ```bash
-SCRIPT="/mnt/skills/user/async-shell/scripts/async_shell.sh"
-chmod +x "$SCRIPT"
+chmod +x scripts/async_shell.sh
+SCRIPT="scripts/async_shell.sh"
 ```
 
 Run `$SCRIPT help` for command reference.
