@@ -17,10 +17,10 @@ on:
 jobs:
   claude:
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, inputs.MENTION)) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, inputs.MENTION)) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, inputs.MENTION)) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, inputs.MENTION) || contains(github.event.issue.title, inputs.MENTION)))
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, github.event.inputs.MENTION)) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, github.event.inputs.MENTION)) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, github.event.inputs.MENTION)) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, github.event.inputs.MENTION) || contains(github.event.issue.title, github.event.inputs.MENTION)))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,7 +40,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ZAI_API_KEY }}
           claude_env: |
             ANTHROPIC_BASE_URL: https://api.z.ai/api/anthropic
-          trigger_phrase: ${{inputs.MENTION}}
+          trigger_phrase: ${{github.event.inputs.MENTION}}
         env:
           ANTHROPIC_AUTH_TOKEN: ${{ secrets.ZAI_API_KEY }}
           ANTHROPIC_BASE_URL: https://api.z.ai/api/anthropic
